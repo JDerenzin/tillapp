@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: ".env");
+
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    publishableKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
+  );
+
   runApp(const Tillapp());
 }
 
@@ -14,7 +24,7 @@ class Tillapp extends StatefulWidget {
 }
 
 class _TillappState extends State<Tillapp> {
-String _mensaje = 'Bienvenido a Tillapp';
+  String _mensaje = 'Bienvenido a Tillapp';
 
   @override
   Widget build(BuildContext context) {
