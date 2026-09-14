@@ -51,12 +51,13 @@ class _TillappState extends State<Tillapp> {
   @override
   void initState() {
     super.initState();
-    _loadFromCache(); // 1. Carga inmediata desde la caché
+    _loadFromCache();
   }
 
   Future<void> _loadFromCache() async {
     final prefs = await SharedPreferences.getInstance();
     final String? cachedData = prefs.getString('cache_productos');
+    //debugPrint('DATOS EN CACHÉ: $cachedData');
 
     if (cachedData != null) {
       final List<dynamic> jsonList = jsonDecode(cachedData);
@@ -80,11 +81,13 @@ class _TillappState extends State<Tillapp> {
     try {
       final response = await Supabase.instance.client
           .from('productos')
-          .select('nombre, precio');
+          .select('nombre, precio')
+          .order('nombre', ascending: true);
 
       final List<dynamic> data = response as List<dynamic>;
-      final List<Producto> remoteProductos =
-          data.map((item) => Producto.fromJson(item as Map<String, dynamic>)).toList();
+      final List<Producto> remoteProductos = data
+          .map((item) => Producto.fromJson(item as Map<String, dynamic>))
+          .toList();
 
       setState(() {
         _productos = remoteProductos;
