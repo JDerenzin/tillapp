@@ -20,15 +20,14 @@ Future<void> main() async {
 class Producto {
   final String nombre;
   final double precio;
+  final String precioFormateado;
 
-  Producto({required this.nombre, required this.precio});
+  Producto({required this.nombre, required this.precio, required this.precioFormateado});
 
   // Convertir de JSON (al leer del caché o Supabase)
   factory Producto.fromJson(Map<String, dynamic> json) {
-    return Producto(
-      nombre: json['nombre'] ?? '',
-      precio: (json['precio'] as num?)?.toDouble() ?? 0.0,
-    );
+    final precioNum = (json['precio'] as num?)?.toDouble() ?? 0.0;
+    return Producto(nombre: json['nombre'] ?? '', precio: precioNum, precioFormateado: 'S/ ${precioNum.toStringAsFixed(2)}');
   }
 
   // Convertir a JSON (para guardar en el caché)
@@ -140,7 +139,7 @@ class _TillappState extends State<Tillapp> {
                   final producto = _productos[index];
                   return ListTile(
                     title: Text(producto.nombre),
-                    subtitle: Text('S/ ${producto.precio.toStringAsFixed(2)}'),
+                    subtitle: Text(producto.precioFormateado),
                   );
                 },
               ),
