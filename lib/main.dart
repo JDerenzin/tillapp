@@ -139,7 +139,6 @@ class _TillappState extends State<Tillapp> {
                 itemBuilder: (context, index) {
                   final producto = _productos[index];
                   return ListTile(
-                    leading: const Icon(Icons.shopping_bag),
                     title: Text(producto.nombre),
                     subtitle: Text('S/ ${producto.precio.toStringAsFixed(2)}'),
                   );
