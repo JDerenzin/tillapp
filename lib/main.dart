@@ -204,88 +204,113 @@ class _TillappState extends State<Tillapp> {
                   ),
           ],
         ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: "Buscar producto...",
-                  prefixIcon: Icon(Icons.search),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: _busqueda.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            _filtrarProductos('');
-                          },
-                        )
-                      : null,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child:Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: "Buscar producto...",
+                      prefixIcon: Icon(Icons.search),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: _busqueda.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _filtrarProductos('');
+                              },
+                            )
+                          : null,
+                    ),
+                    onChanged: _filtrarProductos,
+                  ),
                 ),
-                onChanged: _filtrarProductos,
-              ),
-            ),
-            Expanded(
-              child: _productos.isEmpty
-                  ? const Center(child: Text('No hay productos guardados.'))
-                  : _productosFiltrados.isEmpty
-                  ? const Center(
-                      child: Text('No se encontraron coincidencias.'),
-                    )
-                  : ListView.builder(
-                      itemCount: _productosFiltrados.length,
-                      itemBuilder: (context, index) {
-                        final producto = _productosFiltrados[index];
-                        return Dismissible(
-                          key: Key(producto.nombre),
-                          direction: DismissDirection.startToEnd,
-                          confirmDismiss: (direction) async {
-                            _agregarAlCarrito(producto);
-                            return false; // Retorna false para que la fila no desaparezca del catálogo
-                          },
-                          background: Container(
-                            color: Colors.green.shade600,
-                            alignment: Alignment.centerLeft,
-                            padding: const EdgeInsets.only(left: 20),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.add_shopping_cart, color: Colors.white),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Agregar',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                          child: ListTile(
-                            title: Text(producto.nombre),
-                            trailing: Text(producto.precioFormateado),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            
-            const SizedBox(height: 16),
+                
+                const SizedBox(height: 12),
+                const Text(
+                  "Productos",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
 
-            Expanded(
-              child: _carrito.isEmpty
-                  ? const Center(child: Text('El carrito está vacío.'))
-                  : ListView.builder(
-                      itemCount: _carrito.length,
-                      itemBuilder: (context, index) {
-                        final item = _carrito[index];
-                        return ListTile(
-                          title: Text(item.producto.nombre),
-                          trailing: Text(item.producto.precioFormateado),
-                        );
-                      },
-                    ),
+                Expanded(
+                  flex: 3,
+                  child: Card(
+                    child: _productos.isEmpty
+                        ? const Center(child: Text('No hay productos guardados.'))
+                        : _productosFiltrados.isEmpty
+                        ? const Center(
+                            child: Text('No se encontraron coincidencias.'),
+                          )
+                        : ListView.builder(
+                          itemCount: _productosFiltrados.length,
+                          itemBuilder: (context, index) {
+                            final producto = _productosFiltrados[index];
+                            return Dismissible(
+                              key: Key(producto.nombre),
+                              direction: DismissDirection.startToEnd,
+                              confirmDismiss: (direction) async {
+                                _agregarAlCarrito(producto);
+                                return false; // Retorna false para que la fila no desaparezca del catálogo
+                              },
+                              background: Container(
+                                color: Colors.green.shade600,
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.only(left: 20),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.add_shopping_cart, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Agregar',
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              child: ListTile(
+                                title: Text(producto.nombre),
+                                trailing: Text(producto.precioFormateado),
+                              ),
+                            );
+                          },
+                        ),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                const Divider(),
+                const Text(
+                  "Carrito",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+
+                Expanded(
+                  flex: 2,
+                  child: Card(
+                    child: _carrito.isEmpty
+                        ? const Center(child: Text('El carrito está vacío.'))
+                        : ListView.builder(
+                          itemCount: _carrito.length,
+                          itemBuilder: (context, index) {
+                            final item = _carrito[index];
+                            return ListTile(
+                              title: Text(item.producto.nombre),
+                              trailing: Text(item.producto.precioFormateado),
+                            );
+                          },
+                        ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
