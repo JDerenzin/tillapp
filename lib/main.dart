@@ -22,18 +22,36 @@ class Producto {
   final double precio;
   final String precioFormateado;
 
-  Producto({required this.nombre, required this.precio, required this.precioFormateado});
+  Producto({
+    required this.nombre,
+    required this.precio,
+    required this.precioFormateado,
+  });
 
   // Convertir de JSON (al leer del caché o Supabase)
   factory Producto.fromJson(Map<String, dynamic> json) {
     final precioNum = (json['precio'] as num?)?.toDouble() ?? 0.0;
-    return Producto(nombre: json['nombre'] ?? '', precio: precioNum, precioFormateado: 'S/ ${precioNum.toStringAsFixed(2)}');
+    return Producto(
+      nombre: json['nombre'] ?? '',
+      precio: precioNum,
+      precioFormateado: 'S/ ${precioNum.toStringAsFixed(2)}',
+    );
   }
 
   // Convertir a JSON (para guardar en el caché)
   Map<String, dynamic> toJson() {
     return {'nombre': nombre, 'precio': precio};
   }
+}
+
+class ItemCarrito {
+  final Producto producto;
+  int cantidad;
+
+  ItemCarrito({required this.producto, this.cantidad = 1});
+
+  // Cálculos limpios y memorizados por ítem
+  double get subtotal => producto.precio * cantidad;
 }
 
 class Tillapp extends StatefulWidget {
@@ -49,6 +67,7 @@ class _TillappState extends State<Tillapp> {
   String _busqueda = '';
   List<Producto> _productosFiltrados = [];
   final TextEditingController _searchController = TextEditingController();
+  final List<ItemCarrito> _carrito = [];
 
   @override
   void initState() {
@@ -69,7 +88,9 @@ class _TillappState extends State<Tillapp> {
 
     if (cachedData != null) {
       final List<dynamic> jsonList = jsonDecode(cachedData);
-      final listaCargada = jsonList.map((item) => Producto.fromJson(item)).toList();
+      final listaCargada = jsonList
+          .map((item) => Producto.fromJson(item))
+          .toList();
       setState(() {
         _productos = listaCargada;
         _productosFiltrados = listaCargada;
@@ -142,6 +163,20 @@ class _TillappState extends State<Tillapp> {
     });
   }
 
+  void _agregarAlCarrito(Producto producto) {
+    setState(() {
+      final index = _carrito.indexWhere(
+        (item) => item.producto.nombre == producto.nombre,
+      );
+
+      if (index != -1) {
+        _carrito[index].cantidad++;
+      } else {
+        _carrito.add(ItemCarrito(producto: producto));
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -196,20 +231,45 @@ class _TillappState extends State<Tillapp> {
               child: _productos.isEmpty
                   ? const Center(child: Text('No hay productos guardados.'))
                   : _productosFiltrados.isEmpty
-                      ? const Center(child: Text('No se encontraron coincidencias.'))
-                      : ListView.builder(
-                          itemCount: _productosFiltrados.length,
-                          itemBuilder: (context, index) {
-                            final producto = _productosFiltrados[index];
-                            return ListTile(
-                              title: Text(producto.nombre),
-                              subtitle: Text(producto.precioFormateado),
-                            );
+                  ? const Center(
+                      child: Text('No se encontraron coincidencias.'),
+                    )
+                  : ListView.builder(
+                      itemCount: _productosFiltrados.length,
+                      itemBuilder: (context, index) {
+                        final producto = _productosFiltrados[index];
+                        return Dismissible(
+                          key: Key(producto.nombre),
+                          direction: DismissDirection.startToEnd,
+                          confirmDismiss: (direction) async {
+                            _agregarAlCarrito(producto);
+                            return false; // Retorna false para que la fila no desaparezca del catálogo
                           },
-                        ),
+                          background: Container(
+                            color: Colors.green.shade600,
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.only(left: 20),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.add_shopping_cart, color: Colors.white),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Agregar',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          child: ListTile(
+                            title: Text(producto.nombre),
+                            subtitle: Text(producto.precioFormateado),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
-        )
+        ),
       ),
     );
   }
