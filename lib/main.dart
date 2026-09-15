@@ -162,37 +162,37 @@ class _TillappState extends State<Tillapp> {
                   ),
           ],
         ),
-        body: _productos.isEmpty
-            ? const Center(child: Text('No hay productos guardados.'))
-            : Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: "Buscar producto...",
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: _filtrarProductos,
-                    ),
-                  ),
-                  Expanded(
-                    child: _productosFiltrados.isEmpty
-                        ? const Center(child: Text('No se encontraron coincidencias.'))
-                        : ListView.builder(
-                            itemCount: _productosFiltrados.length,
-                            itemBuilder: (context, index) {
-                              final producto = _productosFiltrados[index];
-                              return ListTile(
-                                title: Text(producto.nombre),
-                                subtitle: Text(producto.precioFormateado),
-                              );
-                            },
-                          ),
-                  ),
-                ],
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: const InputDecoration(
+                  hintText: "Buscar producto...",
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: _filtrarProductos,
               ),
+            ),
+            Expanded(
+              child: _productos.isEmpty
+                  ? const Center(child: Text('No hay productos guardados.'))
+                  : _productosFiltrados.isEmpty
+                      ? const Center(child: Text('No se encontraron coincidencias.'))
+                      : ListView.builder(
+                          itemCount: _productosFiltrados.length,
+                          itemBuilder: (context, index) {
+                            final producto = _productosFiltrados[index];
+                            return ListTile(
+                              title: Text(producto.nombre),
+                              subtitle: Text(producto.precioFormateado),
+                            );
+                          },
+                        ),
+            ),
+          ],
+        )
       ),
     );
   }
