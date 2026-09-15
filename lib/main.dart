@@ -300,9 +300,33 @@ class _TillappState extends State<Tillapp> {
                           itemCount: _carrito.length,
                           itemBuilder: (context, index) {
                             final item = _carrito[index];
-                            return ListTile(
-                              title: Text(item.producto.nombre),
-                              trailing: Text(item.producto.precioFormateado),
+                            return Dismissible(
+                              key: Key(item.producto.nombre),
+                              direction: DismissDirection.startToEnd,
+                              onDismissed: (direction) {
+                                setState(() {
+                                  _carrito.removeAt(index);
+                                });
+                              },
+                              background: Container(
+                                color: Colors.red,
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.only(left: 20),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.delete, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Eliminar',
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              child: ListTile(
+                                title: Text(item.producto.nombre),
+                                trailing: Text(item.producto.precioFormateado),
+                              ),
                             );
                           },
                         ),
