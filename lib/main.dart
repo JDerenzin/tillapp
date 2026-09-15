@@ -46,6 +46,8 @@ class Tillapp extends StatefulWidget {
 class _TillappState extends State<Tillapp> {
   List<Producto> _productos = [];
   bool _isSyncing = false;
+  String busqueda = '';
+  List<Producto> _productosFiltrados = [];
 
   @override
   void initState() {
@@ -60,8 +62,10 @@ class _TillappState extends State<Tillapp> {
 
     if (cachedData != null) {
       final List<dynamic> jsonList = jsonDecode(cachedData);
+      final listaCargada = jsonList.map((item) => Producto.fromJson(item)).toList();
       setState(() {
-        _productos = jsonList.map((item) => Producto.fromJson(item)).toList();
+        _productos = listaCargada;
+        _productosFiltrados = listaCargada;
       });
     }
   }
@@ -90,6 +94,15 @@ class _TillappState extends State<Tillapp> {
 
       setState(() {
         _productos = remoteProductos;
+
+        if (busqueda.isEmpty) {
+          _productosFiltrados = remoteProductos;
+        } else {
+          final query = busqueda.toLowerCase().trim();
+          _productosFiltrados = remoteProductos.where((producto) {
+            return producto.nombre.toLowerCase().contains(query);
+          }).toList();
+        }
       });
 
       await _saveToCache(remoteProductos);
@@ -100,8 +113,26 @@ class _TillappState extends State<Tillapp> {
         ).showSnackBar(SnackBar(content: Text('Error al actualizar: $e')));
       }
     } finally {
-      setState(() => _isSyncing = false);
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
     }
+  }
+
+  void _filtrarProductos(String texto) {
+    final query = texto.toLowerCase().trim();
+
+    setState(() {
+      busqueda = texto;
+      if (query.isEmpty) {
+        _productosFiltrados = _productos;
+      } else {
+        // .toLowerCase() a 'query' se hace UNA SOLA VEZ fuera del loop
+        _productosFiltrados = _productos.where((producto) {
+          return producto.nombre.toLowerCase().contains(query);
+        }).toList();
+      }
+    });
   }
 
   @override
@@ -133,15 +164,34 @@ class _TillappState extends State<Tillapp> {
         ),
         body: _productos.isEmpty
             ? const Center(child: Text('No hay productos guardados.'))
-            : ListView.builder(
-                itemCount: _productos.length,
-                itemBuilder: (context, index) {
-                  final producto = _productos[index];
-                  return ListTile(
-                    title: Text(producto.nombre),
-                    subtitle: Text(producto.precioFormateado),
-                  );
-                },
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        hintText: "Buscar producto...",
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: _filtrarProductos,
+                    ),
+                  ),
+                  Expanded(
+                    child: _productosFiltrados.isEmpty
+                        ? const Center(child: Text('No se encontraron coincidencias.'))
+                        : ListView.builder(
+                            itemCount: _productosFiltrados.length,
+                            itemBuilder: (context, index) {
+                              final producto = _productosFiltrados[index];
+                              return ListTile(
+                                title: Text(producto.nombre),
+                                subtitle: Text(producto.precioFormateado),
+                              );
+                            },
+                          ),
+                  ),
+                ],
               ),
       ),
     );
