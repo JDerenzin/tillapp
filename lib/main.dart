@@ -262,8 +262,25 @@ class _TillappState extends State<Tillapp> {
                           ),
                           child: ListTile(
                             title: Text(producto.nombre),
-                            subtitle: Text(producto.precioFormateado),
+                            trailing: Text(producto.precioFormateado),
                           ),
+                        );
+                      },
+                    ),
+            ),
+            
+            const SizedBox(height: 16),
+
+            Expanded(
+              child: _carrito.isEmpty
+                  ? const Center(child: Text('El carrito está vacío.'))
+                  : ListView.builder(
+                      itemCount: _carrito.length,
+                      itemBuilder: (context, index) {
+                        final item = _carrito[index];
+                        return ListTile(
+                          title: Text(item.producto.nombre),
+                          trailing: Text(item.producto.precioFormateado),
                         );
                       },
                     ),
